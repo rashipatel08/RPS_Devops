@@ -1,0 +1,280 @@
+56286 - Siddavatam Yashaswini (Guest) left the chat.
+
+ 
+56266-Shweta Pasame (Guest) left the chat.
+
+ 
+56276-Pritam Jadhav (Guest) left the chat.
+
+ 
+57185-Sri varsha chanumolu (Guest) left the chat.
+
+ 
+56290-Boyapothula Jashwanth Kumar (Guest) was invited to the meeting.
+
+ 
+56290-Boyapothula Jashwanth Kumar (Guest) left the chat.
+
+ 
+56261 Amit Singh (Guest) left the chat.
+
+ 
+57188-Arendala Umesh (Guest) left the chat.
+
+ 
+56281-Gandla NagaSubramanyam (Guest) left the chat.
+
+ 
+56269-Kolli Bhavana (Guest) left the chat.
+
+ 
+Tuesday 05:22 pm Meeting ended: 8h 57m 30s 
+
+ 
+Thursday 02:50 pm Meeting started
+
+ 
+Thursday 02:50 pm Meeting ended: 22s 
+
+ 
+ 
+# -----------------------------
+
+# Apache Deployment
+
+# -----------------------------
+
+apiVersion: apps/v1
+
+kind: Deployment
+
+metadata:
+
+  name: apache-deploy
+
+  labels:
+
+    app: apache
+
+spec:
+
+  replicas: 2   # HPA will control this
+
+  selector:
+
+    matchLabels:
+
+      app: apache
+
+  template:
+
+    metadata:
+
+      labels:
+
+        app: apache
+
+    spec:
+
+      containers:
+
+      - name: apache
+
+        image: httpd:2.4
+
+        ports:
+
+        - containerPort: 80
+
+        resources:
+
+          requests:
+
+            cpu: "100m"
+
+            memory: "128Mi"
+
+          limits:
+
+            cpu: "500m"
+
+            memory: "256Mi"
+ 
+---
+
+# -----------------------------
+
+# Apache Service (LoadBalancer)
+
+# -----------------------------
+
+apiVersion: v1
+
+kind: Service
+
+metadata:
+
+  name: apache-service
+
+spec:
+
+  type: LoadBalancer
+
+  selector:
+
+    app: apache
+
+  ports:
+
+  - port: 80
+
+    targetPort: 80
+ 
+---
+
+# -----------------------------
+
+# Horizontal Pod Autoscaler
+
+# -----------------------------
+
+apiVersion: autoscaling/v2
+
+kind: HorizontalPodAutoscaler
+
+metadata:
+
+  name: apache-hpa
+
+spec:
+
+  scaleTargetRef:
+
+    apiVersion: apps/v1
+
+    kind: Deployment
+
+    name: apache-deploy
+
+  minReplicas: 2
+
+  maxReplicas: 6
+
+  metrics:
+
+  - type: Resource
+
+    resource:
+
+      name: cpu
+
+      target:
+
+        type: Utilization
+
+        averageUtilization: 50
+
+ 
+/****************************************************
+
+* Declarative Jenkins Pipeline
+
+* Purpose : Pull code from Git repository
+
+* Language: Groovy (Pipeline DSL)
+
+****************************************************/
+ 
+pipeline {
+ 
+    // agent any → run on any available Jenkins agent
+
+    agent any
+ 
+    // stages block defines the pipeline flow
+
+    stages {
+ 
+        /********************************************
+
+         * Stage 1: Pull Code from Git
+
+         ********************************************/
+
+        stage('Checkout Code') {
+ 
+            // steps block contains actual execution logic
+
+            steps {
+ 
+                // checkout is a Jenkins SCM step
+
+                // Pulls source code into Jenkins WORKSPACE
+
+                git branch: 'main',
+
+                    url: 'https://github.com/your-org/your-repo.git'
+ 
+                // Print confirmation in console
+
+                echo 'Code pulled successfully from Git'
+
+            }
+
+        }
+ 
+        /********************************************
+
+         * Stage 2: Verify Workspace Content
+
+         ********************************************/
+
+        stage('Verify Code') {
+
+            steps {
+ 
+                // bat executes Windows command
+
+                // dir lists files in workspace
+
+                bat '''
+
+                echo Workspace path:
+
+                echo %WORKSPACE%
+
+                dir
+
+                '''
+
+            }
+
+        }
+
+    }
+ 
+    /********************************************
+
+     * Post actions (run after pipeline)
+
+     ********************************************/
+
+    post {
+
+        success {
+
+            echo 'Pipeline completed successfully'
+
+        }
+
+        failure {
+
+            echo 'Pipeline failed'
+
+        }
+
+    }
+
+}
+
+ 
