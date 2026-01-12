@@ -36,7 +36,7 @@ pipeline {
 
                 git branch: 'main',
 
-                    url: ''
+                    url: 'https://github.com/rashipatel08/RPS_Devops.git'
  
                 // Print confirmation in console
 
