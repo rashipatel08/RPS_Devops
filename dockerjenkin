@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "rashi8/labrpsconsulting/rps-devops"
+        IMAGE_NAME = "rashi8/labrpsconsulting"
         TAG = "latest"
     }
 
@@ -17,7 +17,7 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                sh 'docker build -t $IMAGE_NAME:$TAG .'
+                bat 'docker build -t $IMAGE_NAME:$TAG .'
             }
         }
 
@@ -28,14 +28,14 @@ pipeline {
                     usernameVariable: 'root',
                     passwordVariable: 'rps@12345'
                 )]) {
-                    sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    bat 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
             }
         }
 
         stage('Push Image to Docker Hub') {
             steps {
-                sh 'docker push $IMAGE_NAME:$TAG'
+                bat 'docker push $IMAGE_NAME:$TAG'
             }
         }
     }
