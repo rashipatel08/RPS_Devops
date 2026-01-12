@@ -8,6 +8,12 @@ pipeline {
 
     stages {
 
+        stage('Check Docker Access') {
+            steps {
+                bat 'docker --version'
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main',
@@ -17,7 +23,9 @@ pipeline {
 
         stage('Build Docker Image') {
             steps {
-                bat 'docker build -t $IMAGE_NAME:$TAG .'
+                bat '''
+                docker build -t %IMAGE_NAME%:%TAG% .
+                '''
             }
         }
 
@@ -25,18 +33,31 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'root',
-                    passwordVariable: 'rps@12345'
+                    usernameVariable: 'rashi8',
+                    passwordVariable: 'Rashiraj1708*'
                 )]) {
-                    bat 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
+                    bat '''
+                    docker login -u %DOCKER_USER% -p %DOCKER_PASS%
+                    '''
                 }
             }
         }
 
         stage('Push Image to Docker Hub') {
             steps {
-                bat 'docker push $IMAGE_NAME:$TAG'
+                bat '''
+                docker push %IMAGE_NAME%:%TAG%
+                '''
             }
+        }
+    }
+
+    post {
+        success {
+            echo "Docker image built and pushed successfully!"
+        }
+        failure {
+            echo "Pipeline failed"
         }
     }
 }
