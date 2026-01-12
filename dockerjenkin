@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "your_dockerhub_username/myapp"
+        IMAGE_NAME = "rashi8/labrpsconsulting/rps-devops"
         TAG = "latest"
     }
 
@@ -10,7 +10,8 @@ pipeline {
 
         stage('Checkout Code') {
             steps {
-                git 'https://github.com/rashipatel08/RPS_Devops.git'
+                git branch: 'main',
+                    url: 'https://github.com/rashipatel08/RPS_Devops.git'
             }
         }
 
@@ -24,8 +25,8 @@ pipeline {
             steps {
                 withCredentials([usernamePassword(
                     credentialsId: 'dockerhub-creds',
-                    usernameVariable: 'DOCKER_USER',
-                    passwordVariable: 'DOCKER_PASS'
+                    usernameVariable: 'root',
+                    passwordVariable: 'rps@12345'
                 )]) {
                     sh 'echo $DOCKER_PASS | docker login -u $DOCKER_USER --password-stdin'
                 }
@@ -36,12 +37,6 @@ pipeline {
             steps {
                 sh 'docker push $IMAGE_NAME:$TAG'
             }
-        }
-    }
-
-    post {
-        success {
-            echo "Docker image pushed successfully 🎉"
         }
     }
 }
